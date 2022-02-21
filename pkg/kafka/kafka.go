@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	gAddrs = `106.75.106.139:9092`
+	// gAddrs = `106.75.106.139:9092`
+	gAddrs = `127.0.0.1:9092`
 )
 
 func Insert(topic string, smas ...*model.Schema) error {
@@ -42,9 +43,8 @@ func Read(topic string) (chan *model.Schema, error) {
 	// to consume messages
 
 	partition := 0
-	addrs := `106.75.106.139:9092`
 
-	conn, err := kafka.DialLeader(context.Background(), "tcp", addrs, topic, partition)
+	conn, err := kafka.DialLeader(context.Background(), "tcp", gAddrs, topic, partition)
 	if err != nil {
 		return nil, err
 	}

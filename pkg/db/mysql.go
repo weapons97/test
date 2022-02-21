@@ -18,7 +18,7 @@ func NewDatabase() (*sql.DB, error) {
 		return gmysql, nil
 	}
 	dbStr := "root:test@tcp(127.0.0.1:3306)/test"
-	dbStr = "root:test@tcp(106.75.106.139:3306)/test"
+	// dbStr = "root:test@tcp(106.75.106.139:3306)/test"
 	db, err := sql.Open(
 		"mysql",
 		dbStr)
