@@ -1,14 +1,11 @@
 *.swp
 .vscode/*
 bin/*
-pkg/*
 log
 .idea
 vendor
 _rpmbuild
 *.rpm
-/src/main/apiServer.logs/
-/src/main/main
 *.svg
 *.out
 *.test
