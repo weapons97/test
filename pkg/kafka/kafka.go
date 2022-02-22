@@ -13,18 +13,21 @@ var (
 	// gAddrs = `106.75.106.139:9092`
 	gAddrs = `127.0.0.1:9092`
 	gConns = map[string]*kafka.Conn{}
+	times  = 0
 )
 
 func GetConn(topic string) *kafka.Conn {
 	conn, ok := gConns[topic]
 	var err error
-	if !ok {
+	if !ok && times > 5 {
 		conn, err = kafka.DialLeader(context.Background(), "tcp", gAddrs, topic, 0)
 		if err != nil {
 			log.Panic().Err(err).Send()
 		}
 		gConns[topic] = conn
+		times = 0
 	}
+	times++
 	return conn
 }
 func Insert(topic string, smas ...*model.Schema) error {
@@ -39,6 +42,7 @@ func Insert(topic string, smas ...*model.Schema) error {
 	// conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 	_, err := conn.WriteMessages(ins...)
 	if err != nil {
+		log.Panic().Err(err).Send()
 		return err
 	}
 
