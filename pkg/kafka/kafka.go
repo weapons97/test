@@ -19,7 +19,7 @@ var (
 func GetConn(topic string) *kafka.Conn {
 	conn, ok := gConns[topic]
 	var err error
-	if !ok || times > 5 {
+	if !ok {
 		conn, err = kafka.DialLeader(context.Background(), "tcp", gAddrs, topic, 0)
 		if err != nil {
 			log.Panic().Err(err).Send()
@@ -27,7 +27,7 @@ func GetConn(topic string) *kafka.Conn {
 		gConns[topic] = conn
 		times = 0
 	}
-	times++
+	// times++
 	return conn
 }
 func Insert(topic string, smas ...*model.Schema) error {

@@ -23,7 +23,7 @@ func CheckErr(e error) {
 
 func ProcessSpawn(topic string, _len int) {
 	sp := spawner.NewDataSpawner()
-	lx := 1000
+	lx := 10000
 	tmp := make([]*model.Schema, lx)
 	bufed := false
 	_db, e := db.NewDatabase()

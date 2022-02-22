@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/rs/zerolog/log"
@@ -25,6 +26,7 @@ func NewDatabase() (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	db.SetConnMaxLifetime(0)
 	gmysql = db
 	return db, nil
 }
