@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
@@ -10,7 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"helloTigerGraph/pkg/db"
-	"helloTigerGraph/pkg/indexer"
 	"helloTigerGraph/pkg/kafka"
 	"helloTigerGraph/pkg/model"
 	"helloTigerGraph/pkg/spawner"
@@ -137,20 +135,20 @@ LOOP:
 	return
 }
 
-func ReadByID(id model.SchemaID, f *os.File) ([]byte, error) {
-	e := indexer.Seek(f, id)
-	if e != nil {
-		return nil, e
-	}
-	endpos := db.Id2filePositionRead(id + 1)
-	if endpos != 0 {
-		_len := int(endpos) - int(db.Id2filePositionRead(id))
-		buf := make([]byte, _len)
-		_, err := f.Read(buf)
-		return buf, err
-	}
-	return ioutil.ReadAll(f)
-}
+//func ReadByID(id model.SchemaID, f *os.File) ([]byte, error) {
+//	e := indexer.Seek(f, id)
+//	if e != nil {
+//		return nil, e
+//	}
+//	endpos := db.Id2filePositionRead(id + 1)
+//	if endpos != 0 {
+//		_len := int(endpos) - int(db.Id2filePositionRead(id))
+//		buf := make([]byte, _len)
+//		_, err := f.Read(buf)
+//		return buf, err
+//	}
+//	return ioutil.ReadAll(f)
+//}
 
 func ProcessContinent() {
 	_db, e := db.NewDatabase()
