@@ -23,18 +23,19 @@ func CheckErr(e error) {
 
 func ProcessSpawn(topic string, _len int) {
 	sp := spawner.NewDataSpawner()
-	tmp := make([]*model.Schema, 10000)
+	lx := 1000
+	tmp := make([]*model.Schema, lx)
 	bufed := false
 	_db, e := db.NewDatabase()
 	CheckErr(e)
 	i := 0
 	for {
-		j := i % 10000
+		j := i % lx
 		line := sp.Spawn()
 		if i == _len {
 			if bufed {
 				if j == 0 {
-					j = 10000
+					j = lx
 				}
 				log.Info().Msgf(`Insert *** %d`, i)
 				err := db.Insert(_db, tmp[:j]...)
@@ -67,17 +68,18 @@ func ProcessName() {
 	cx, e := db.Search(_db, `name`)
 	CheckErr(e)
 	i := 0
-	tmp := make([]*model.Schema, 10000)
+	lx := 10000
+	tmp := make([]*model.Schema, lx)
 	bufed := false
 LOOP:
 	for {
 		select {
 		case scm, ok := <-cx:
-			j := i % 10000
+			j := i % lx
 			if !ok {
 				if bufed {
 					if j == 0 {
-						j = 10000
+						j = lx
 					}
 					e = kafka.Insert(`name`, tmp[:j]...)
 					CheckErr(e)
@@ -104,17 +106,18 @@ func ProcessID() {
 	cx, e := db.Search(_db, `id`)
 	CheckErr(e)
 	i := 0
-	tmp := make([]*model.Schema, 10000)
+	lx := 10000
+	tmp := make([]*model.Schema, lx)
 	bufed := false
 LOOP:
 	for {
 		select {
 		case scm, ok := <-cx:
-			j := i % 10000
+			j := i % lx
 			if !ok {
 				if bufed {
 					if j == 0 {
-						j = 10000
+						j = lx
 					}
 					e = kafka.Insert(`id`, tmp[:j]...)
 					CheckErr(e)
@@ -156,17 +159,18 @@ func ProcessContinent() {
 	cx, e := db.Search(_db, `continent`)
 	CheckErr(e)
 	i := 0
-	tmp := make([]*model.Schema, 10000)
+	lx := 10000
+	tmp := make([]*model.Schema, lx)
 	bufed := false
 LOOP:
 	for {
 		select {
 		case scm, ok := <-cx:
-			j := i % 10000
+			j := i % lx
 			if !ok {
 				if bufed {
 					if j == 0 {
-						j = 10000
+						j = lx
 					}
 					e = kafka.Insert(`continent`, tmp[:j]...)
 					CheckErr(e)
