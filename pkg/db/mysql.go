@@ -11,12 +11,7 @@ import (
 	"helloTigerGraph/pkg/model"
 )
 
-var gmysql *sql.DB
-
 func NewDatabase() (*sql.DB, error) {
-	if gmysql != nil {
-		return gmysql, nil
-	}
 	dbStr := "root:test@tcp(127.0.0.1:3306)/test"
 	// dbStr = "root:test@tcp(106.75.106.139:3306)/test"
 	db, err := sql.Open(
@@ -26,11 +21,15 @@ func NewDatabase() (*sql.DB, error) {
 		return nil, err
 	}
 	db.SetConnMaxLifetime(0)
-	gmysql = db
 	return db, nil
 }
 
-func Search(db *sql.DB, by string) (chan *model.Schema, error) {
+func Search(by string) (chan *model.Schema, error) {
+	db, e := NewDatabase()
+	if e != nil {
+		log.Error().Err(e).Send()
+		return nil, e
+	}
 	// 通过切片存储
 	rows, e := db.Query("SELECT * FROM users order by " + by)
 	if e != nil {
@@ -52,12 +51,18 @@ func Search(db *sql.DB, by string) (chan *model.Schema, error) {
 		}
 		log.Info().Msg(`search end`)
 		close(c)
+		db.Close()
 	}()
 	return c, nil
 }
 
-func Insert(db *sql.DB, scms ...*model.Schema) error {
+func Insert(scms ...*model.Schema) error {
 	// 插入数据
+	db, e := NewDatabase()
+	if e != nil {
+		log.Error().Err(e).Send()
+		return e
+	}
 	if len(scms) == 0 {
 		return nil
 	}
@@ -87,5 +92,6 @@ func Insert(db *sql.DB, scms ...*model.Schema) error {
 	if int(row) != len(scms) {
 		return errors.New(fmt.Sprintf("bad insert row %d", row))
 	}
+	db.Close()
 	return nil
 }
