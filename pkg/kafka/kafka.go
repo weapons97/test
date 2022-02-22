@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
@@ -13,43 +12,44 @@ import (
 var (
 	// gAddrs = `106.75.106.139:9092`
 	gAddrs = `127.0.0.1:9092`
+	gConns = map[string]*kafka.Conn{}
 )
 
+func GetConn(topic string) *kafka.Conn {
+	conn, ok := gConns[topic]
+	var err error
+	if !ok {
+		conn, err = kafka.DialLeader(context.Background(), "tcp", gAddrs, topic, 0)
+		if err != nil {
+			log.Panic().Err(err).Send()
+		}
+		gConns[topic] = conn
+	}
+	return conn
+}
 func Insert(topic string, smas ...*model.Schema) error {
 	log.Info().Msgf(`KafKaInsert %v len=%+v from=%+v to=%+v `,
 		topic, len(smas), smas[0], smas[len(smas)-1])
-	partition := 0
 
-	conn, err := kafka.DialLeader(context.Background(), "tcp", gAddrs, topic, partition)
-	if err != nil {
-		return err
-	}
+	conn := GetConn(topic)
 	ins := make([]kafka.Message, len(smas))
 	for i, v := range smas {
 		ins[i] = kafka.Message{Value: []byte(v.String())}
 	}
-	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
-	_, err = conn.WriteMessages(ins...)
+	// conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+	_, err := conn.WriteMessages(ins...)
 	if err != nil {
 		return err
 	}
-	if err := conn.Close(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
 func Read(topic string) (chan *model.Schema, error) {
 	// to consume messages
 
-	partition := 0
+	conn := GetConn(topic)
 
-	conn, err := kafka.DialLeader(context.Background(), "tcp", gAddrs, topic, partition)
-	if err != nil {
-		return nil, err
-	}
-
-	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
 	batch := conn.ReadBatch(100, 1e6*50)
 	// 遍历
 	c := make(chan *model.Schema, 10000)
@@ -71,9 +71,7 @@ func Read(topic string) (chan *model.Schema, error) {
 		if err := batch.Close(); err != nil {
 			log.Error().Err(err).Send()
 		}
-		if err := conn.Close(); err != nil {
-			log.Error().Err(err).Send()
-		}
+
 	}()
 
 	return c, nil

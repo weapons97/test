@@ -1,3 +1,4 @@
+use test;
 drop table if exists `users`;
 create table `users` (
     `id` int unsigned not null,
